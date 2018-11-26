@@ -12,16 +12,18 @@ namespace UI
     {
         static void Main(string[] args)
         {
-            var t = new Terminal(Console.WriteLine)
+            var t = new Terminal()
             {
-                PhoneNumber = "1"
+                PhoneNumber = "1",
+                Log = Console.WriteLine
             };
 
             var port = new Port();
 
-            var t2 = new Terminal(Console.WriteLine)
+            var t2 = new Terminal()
             {
-                PhoneNumber = "2"
+                PhoneNumber = "2",
+                Log = Console.WriteLine
             };
 
             var port2 = new Port();
@@ -42,14 +44,14 @@ namespace UI
             t.OutgoingCall += port.ReportStationAboutOutgoingCall;
 
             port.Outgoing += station.ReportPortAboutIncomingCall;
-
             station.Call += port.ReportTerminalAboutIncomingCall;
 
             port.Incoming += t.NotificationAboutIncomingCall;
-
             t.RejectCall += port.ReportStationAboutCallReject;
+
             port.CallReject += station.ReportPortAboutCallReject;
             station.CallReject += port.ReportTerminalAboutCallReject;
+
             port.CallWasRejectedFromReceiver += t.CallWasRejected;
 
             #endregion
@@ -76,8 +78,7 @@ namespace UI
             #endregion
 
             t.Call("2");
-            Thread.Sleep(3000);
-            t2.Reject();
+            t.Reject();
         }
     }
 }

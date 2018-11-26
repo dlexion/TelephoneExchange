@@ -11,7 +11,7 @@ namespace TelephoneExchange
     {
         public string PhoneNumber { get; set; }
 
-        private Action<string> reportResult;
+        public Action<string> Log { get; set; } = null;
 
         public event EventHandler<CallEventArgs> OutgoingCall;
 
@@ -25,14 +25,9 @@ namespace TelephoneExchange
 
         public event EventHandler Disconnect;
 
-        public Terminal(Action<string> report)
-        {
-            reportResult = report;
-        }
-
         public void NotificationAboutIncomingCall(object sender, CallEventArgs e)
         {
-            reportResult($"{e.SenderPhoneNumber} is calling you");
+            Log?.Invoke($"{e.SenderPhoneNumber} is calling {PhoneNumber}");
         }
 
         public void Call(string number)
@@ -52,8 +47,7 @@ namespace TelephoneExchange
 
         public void Reject()
         {
-            //Console.WriteLine("We have rejected a call");
-            reportResult("We have rejected a call");
+            Log?.Invoke($"{PhoneNumber} have rejected a call");
 
             //create new args class
             OnRejectCall(new CallEventArgs("", PhoneNumber));
@@ -61,7 +55,7 @@ namespace TelephoneExchange
 
         public void CallWasRejected(object sender, CallEventArgs e)
         {
-            reportResult("Call was rejected");
+            Log?.Invoke($"Call from {e.SenderPhoneNumber} was rejected by {e.ReceiverPhoneNumber}");
         }
 
         public void ConnectToPort()
