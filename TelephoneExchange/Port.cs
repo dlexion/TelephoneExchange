@@ -17,6 +17,8 @@ namespace TelephoneExchange
 
         public event EventHandler<CallEventArgs> CallReject;
 
+        public event EventHandler<CallEventArgs> CallAnswer;
+
         public event EventHandler<CallEventArgs> CallWasRejectedFromReceiver;
 
         public void ReportStationAboutOutgoingCall(object sender, CallEventArgs e)
@@ -49,6 +51,11 @@ namespace TelephoneExchange
             OnCallWasRejectedFromReceiver(e);
         }
 
+        public void ReportStationAboutCallAnswer(object sender, CallEventArgs e)
+        {
+            OnCallAnswer(e);
+        }
+
         public void ConnectWithTerminal(object sender, ConnectionEventArgs e)
         {
             PhoneNumber = e.PhoneNumber;
@@ -79,6 +86,11 @@ namespace TelephoneExchange
         protected virtual void OnCallWasRejectedFromReceiver(CallEventArgs e)
         {
             CallWasRejectedFromReceiver?.Invoke(this, e);
+        }
+
+        protected virtual void OnCallAnswer(CallEventArgs e)
+        {
+            CallAnswer?.Invoke(this, e);
         }
     }
 }

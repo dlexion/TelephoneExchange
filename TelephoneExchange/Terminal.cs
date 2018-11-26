@@ -32,19 +32,25 @@ namespace TelephoneExchange
 
         public void Call(string number)
         {
-            var args = new CallEventArgs (PhoneNumber, number);
+            var args = new CallEventArgs(PhoneNumber, number);
 
             OnOutgoingCall(args);
         }
 
         // TODO
-        public void Answer(object sender, CallEventArgs e)
+        public void Answer()
         {
-            e.StartTime = DateTime.UtcNow;
+            Log?.Invoke($"{PhoneNumber} have answered a call");
+
+            var e = new CallEventArgs("", PhoneNumber)
+            {
+                StartTime = DateTime.UtcNow
+            };
 
             OnAnswerCall(e);
         }
 
+        // TODO add args for call reject
         public void Reject()
         {
             Log?.Invoke($"{PhoneNumber} have rejected a call");

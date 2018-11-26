@@ -47,12 +47,15 @@ namespace UI
             station.Call += port.ReportTerminalAboutIncomingCall;
 
             port.Incoming += t.NotificationAboutIncomingCall;
-            t.RejectCall += port.ReportStationAboutCallReject;
 
+            t.RejectCall += port.ReportStationAboutCallReject;
             port.CallReject += station.ReportPortAboutCallReject;
             station.CallReject += port.ReportTerminalAboutCallReject;
 
             port.CallWasRejectedFromReceiver += t.CallWasRejected;
+
+            t.AnswerCall += port.ReportStationAboutCallAnswer;
+            port.CallAnswer += station.ReportPortAboutCallAnswer;
 
             #endregion
 
@@ -75,10 +78,17 @@ namespace UI
             station.CallReject += port2.ReportTerminalAboutCallReject;
             port2.CallWasRejectedFromReceiver += t2.CallWasRejected;
 
+            t2.AnswerCall += port2.ReportStationAboutCallAnswer;
+            port2.CallAnswer += station.ReportPortAboutCallAnswer;
+
             #endregion
 
             t.Call("2");
-            t.Reject();
+            t2.Answer();
+
+            Thread.Sleep(1000);
+
+            t2.Reject();
         }
     }
 }

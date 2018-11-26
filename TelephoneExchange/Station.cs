@@ -14,6 +14,8 @@ namespace TelephoneExchange
 
         Dictionary<Port, Port> expectAnswer = new Dictionary<Port, Port>();
 
+        Dictionary<Port, Port> callInProgress = new Dictionary<Port, Port>();
+
         public event EventHandler<CallEventArgs> Call;
 
         public event EventHandler<CallEventArgs> CallReject;
@@ -30,7 +32,7 @@ namespace TelephoneExchange
             if (receiverPort.State == PortState.Online)
             {
                 //mb switch places
-                expectAnswer.Add(receiverPort, (Port)sender);
+                expectAnswer.Add((Port)sender, receiverPort);
 
                 OnCall(e, receiverPort);
             }
@@ -40,18 +42,63 @@ namespace TelephoneExchange
             }
         }
 
+        // TODO refactor if states and add event for billing
         public void ReportPortAboutCallReject(object sender, CallEventArgs e)
         {
-            // is it right
-            //var senderPort = ports.Find(x => x.PhoneNumber == e.SenderPhoneNumber);
-
             var receiverPort = (Port)sender;
+            Port senderPort = null;
+            //var senderPort = expectAnswer[receiverPort];
 
-            var senderPort = expectAnswer[receiverPort];
+            //expectAnswer.Remove(receiverPort);
 
-            expectAnswer.Remove(receiverPort);
+            //OnCallReject(e, senderPort);var myKey = types.FirstOrDefault(x => x.Value == "one").Key;
+
+            if (expectAnswer.ContainsKey(receiverPort))
+            {
+                senderPort = expectAnswer[receiverPort];
+
+                expectAnswer.Remove(receiverPort);
+
+                e.SenderPhoneNumber = receiverPort.PhoneNumber;
+            }
+            else if (expectAnswer.ContainsValue(receiverPort))
+            {
+                // add check for default
+                senderPort = expectAnswer.FirstOrDefault(x => x.Value == receiverPort).Key;
+
+                expectAnswer.Remove(senderPort);
+
+                e.SenderPhoneNumber = senderPort.PhoneNumber;
+            }
+            // TODO notify billing system in these cases
+            else if (callInProgress.ContainsKey(receiverPort))
+            {
+                senderPort = callInProgress[receiverPort];
+
+                callInProgress.Remove(receiverPort);
+
+                e.SenderPhoneNumber = receiverPort.PhoneNumber;
+            }
+            else
+            {
+                senderPort = callInProgress.FirstOrDefault(x => x.Value == receiverPort).Key;
+
+                callInProgress.Remove(senderPort);
+
+                e.SenderPhoneNumber = senderPort.PhoneNumber;
+            }
+
 
             OnCallReject(e, senderPort);
+        }
+
+        public void ReportPortAboutCallAnswer(object sender, CallEventArgs e)
+        {
+            var senderPort = expectAnswer.FirstOrDefault(x => x.Value == (Port)sender).Key;
+
+            expectAnswer.Remove(senderPort);
+
+            callInProgress.Add(senderPort, (Port)sender);
         }
 
         protected virtual void OnCall(CallEventArgs e, Port target)
