@@ -10,6 +10,8 @@ namespace TelephoneExchange.EventsArgs
 
         public DateTime StartTime { get; set; }
 
+        public DateTime EndTime { get; set; }
+
         public CallEventArgs(string senderNumber, string receiverNumber)
         {
             SenderPhoneNumber = senderNumber;
