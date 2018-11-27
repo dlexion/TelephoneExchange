@@ -28,6 +28,8 @@ namespace TelephoneExchange
         public void NotificationAboutIncomingCall(object sender, CallEventArgs e)
         {
             Log?.Invoke($"{e.SenderPhoneNumber} is calling {PhoneNumber}");
+
+            OnIncomingCall(e);
         }
 
         public void Call(string number)
@@ -37,7 +39,7 @@ namespace TelephoneExchange
             OnOutgoingCall(args);
         }
 
-        // TODO
+        // TODO args
         public void Answer()
         {
             Log?.Invoke($"{PhoneNumber} have answered a call");

@@ -39,9 +39,12 @@ namespace TelephoneExchange
 
         public void ReportStationAboutCallReject(object sender, CallEventArgs e)
         {
-            State = PortState.Online;
+            if (State == PortState.Busy)
+            {
+                State = PortState.Online;
 
-            OnCallReject(e);
+                OnCallReject(e);
+            }
         }
 
         public void ReportTerminalAboutCallReject(object sender, CallEventArgs e)

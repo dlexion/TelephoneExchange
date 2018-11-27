@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TelephoneExchange;
+using TelephoneExchange.EventsArgs;
 
 namespace UI
 {
@@ -12,6 +13,7 @@ namespace UI
     {
         static void Main(string[] args)
         {
+            // TODO create Person instance and give him terminal throw billing
             var t = new Terminal()
             {
                 PhoneNumber = "1",
@@ -83,12 +85,23 @@ namespace UI
 
             #endregion
 
+            t.IncomingCall += RejectOrAnswer;
+            t2.IncomingCall += RejectOrAnswer;
+
             t.Call("2");
-            t2.Answer();
+            //t2.Answer();
 
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
 
-            t2.Reject();
+            t.Reject();
+        }
+
+        // TODO give user ability to choose what to do with incoming call
+        static void RejectOrAnswer(object sender, CallEventArgs e)
+        {
+            var terminal = (Terminal)sender;
+
+            terminal.Answer();
         }
     }
 }
