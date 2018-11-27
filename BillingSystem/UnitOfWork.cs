@@ -1,4 +1,5 @@
-﻿using BillingSystem.Repositories;
+﻿using BillingSystem.Models;
+using BillingSystem.Repositories;
 
 namespace BillingSystem
 {
@@ -7,5 +8,9 @@ namespace BillingSystem
         public IRepository<Call> Calls { get; }
 
         public IRepository<Client> Clients { get; }
+
+        public IRepository<string> PhoneNumbers { get; }
+
+        public IRepository<Phone> Phones { get; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BillingSystem
+namespace BillingSystem.Models
 {
     public class Call
     {

@@ -1,6 +1,6 @@
 ﻿using TelephoneExchange;
 
-namespace BillingSystem
+namespace BillingSystem.Models
 {
     public class Client
     {
