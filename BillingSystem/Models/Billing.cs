@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using TelephoneExchange;
 using TelephoneExchange.EventsArgs;
 
 namespace BillingSystem.Models
 {
+    // TODO reduce balance once per month
     public class Billing
     {
         private UnitOfWork _data;
@@ -25,7 +27,7 @@ namespace BillingSystem.Models
 
             if (!_data.Clients.GetAll().Any(x => x.FirstName == firstName && x.LastName == lastName))
             {
-                _data.Clients.Add(new Client(firstName, lastName));
+                _data.Clients.Add(new Client(firstName, lastName) { Terminal = new Phone(terminal.PhoneNumber) });
 
                 return new Tuple<Terminal, Port>(terminal, port);
             }
@@ -43,6 +45,35 @@ namespace BillingSystem.Models
             var phone = _data.Phones.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
 
             return phone?.Balance ?? default(decimal);
+        }
+
+        public void ReplenishmentBalance(string phoneNumber, decimal money)
+        {
+            var phone = _data.Phones.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
+
+            if (phone != null)
+            {
+                phone.Balance += money;
+            }
+        }
+
+        public string GetReport(string phoneNumber, Func<Call, bool> selector = null)
+        {
+            StringBuilder info = new StringBuilder();
+
+            var q = selector != null
+                ? _data.Calls.GetAll()
+                    .Where(x => x.SenderPhoneNumber == phoneNumber || x.ReceiverPhoneNumber == phoneNumber)
+                    .Where(selector).ToList()
+                : _data.Calls.GetAll()
+                    .Where(x => x.SenderPhoneNumber == phoneNumber || x.ReceiverPhoneNumber == phoneNumber).ToList();
+
+            foreach (var item in q)
+            {
+                info.Append(item);
+            }
+
+            return info.ToString();
         }
 
         private string GetPhoneNumberForNewClient()

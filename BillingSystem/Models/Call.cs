@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace BillingSystem.Models
 {
@@ -23,6 +24,11 @@ namespace BillingSystem.Models
             StartTime = startTime;
 
             EndTime = endTime;
+        }
+
+        public override string ToString()
+        {
+            return $"{SenderPhoneNumber} | {ReceiverPhoneNumber} | {StartTime} | {EndTime} | {Duration}";
         }
     }
 }

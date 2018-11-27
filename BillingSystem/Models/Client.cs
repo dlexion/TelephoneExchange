@@ -8,7 +8,7 @@ namespace BillingSystem.Models
 
         public string LastName { get; }
 
-        public Terminal Terminal { get; set; }
+        public Phone Terminal { get; set; }
 
         public Client(string firstName, string lastName)
         {
