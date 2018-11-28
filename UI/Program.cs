@@ -16,19 +16,17 @@ namespace UI
             // TODO create Person instance and give him terminal throw billing
             var t = new Terminal()
             {
-                PhoneNumber = "1",
                 Log = Console.WriteLine
             };
 
-            var port = new Port();
+            var port = new Port("1");
 
             var t2 = new Terminal()
             {
-                PhoneNumber = "2",
                 Log = Console.WriteLine
             };
 
-            var port2 = new Port();
+            var port2 = new Port("2");
 
             var station = new Station(new List<Port>()
             {
@@ -36,64 +34,22 @@ namespace UI
                 port2
             });
 
-            #region first port connection
+            t.ConnectToPort(port);
+            t2.ConnectToPort(port2);
 
-            t.Connect += port.ConnectWithTerminal;
-            t.Disconnect += port.DisconnectWithTerminal;
+            Console.WriteLine(station.GetPortsState());
 
-            t.ConnectToPort();
+            t.Call(port2.PhoneNumber);
 
-            t.OutgoingCall += port.ReportStationAboutOutgoingCall;
+            Console.WriteLine(station.GetPortsState());
 
-            port.Outgoing += station.ReportPortAboutIncomingCall;
-            station.Call += port.ReportTerminalAboutIncomingCall;
+            Thread.Sleep(1000);
 
-            port.Incoming += t.NotificationAboutIncomingCall;
-
-            t.RejectCall += port.ReportStationAboutCallReject;
-            port.CallReject += station.ReportPortAboutCallReject;
-            station.CallReject += port.ReportTerminalAboutCallReject;
-
-            port.CallWasRejectedFromReceiver += t.CallWasRejected;
-
-            t.AnswerCall += port.ReportStationAboutCallAnswer;
-            port.CallAnswer += station.ReportPortAboutCallAnswer;
-
-            #endregion
-
-            #region second port connection
-            t2.Connect += port2.ConnectWithTerminal;
-            t2.Disconnect += port2.DisconnectWithTerminal;
-
-            t2.ConnectToPort();
-
-            t2.OutgoingCall += port2.ReportStationAboutOutgoingCall;
-
-            port2.Outgoing += station.ReportPortAboutIncomingCall;
-
-            station.Call += port2.ReportTerminalAboutIncomingCall;
-
-            port2.Incoming += t2.NotificationAboutIncomingCall;
-
-            t2.RejectCall += port2.ReportStationAboutCallReject;
-            port2.CallReject += station.ReportPortAboutCallReject;
-            station.CallReject += port2.ReportTerminalAboutCallReject;
-            port2.CallWasRejectedFromReceiver += t2.CallWasRejected;
-
-            t2.AnswerCall += port2.ReportStationAboutCallAnswer;
-            port2.CallAnswer += station.ReportPortAboutCallAnswer;
-
-            #endregion
-
-            t.IncomingCall += RejectOrAnswer;
-            t2.IncomingCall += RejectOrAnswer;
-
-            t.Call("2");
-            //t2.Answer();
-
-            //Thread.Sleep(1000);
+            Console.WriteLine(station.GetPortsState());
 
             t.Reject();
+
+            Console.ReadKey();
         }
 
         // TODO give user ability to choose what to do with incoming call
@@ -101,7 +57,7 @@ namespace UI
         {
             var terminal = (Terminal)sender;
 
-            terminal.Answer();
+            //terminal.Answer();
         }
     }
 }

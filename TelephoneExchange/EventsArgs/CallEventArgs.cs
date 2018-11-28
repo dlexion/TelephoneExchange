@@ -2,6 +2,7 @@
 
 namespace TelephoneExchange.EventsArgs
 {
+    // TODO remove
     public class CallEventArgs : EventArgs
     {
         public string SenderPhoneNumber { get; set; }

@@ -1,0 +1,19 @@
+﻿using System;
+using TelephoneExchange.Enums;
+
+namespace TelephoneExchange.EventsArgs
+{
+    public class CallResultEventArgs : EventArgs
+    {
+        public CallResultEventArgs(string receiverPhoneNumber, AnswerType answerType)
+        {
+            ReceiverPhoneNumber = receiverPhoneNumber;
+            AnswerType = answerType;
+        }
+
+        public string ReceiverPhoneNumber { get; set; }
+
+        public AnswerType AnswerType { get; set; }
+
+    }
+}

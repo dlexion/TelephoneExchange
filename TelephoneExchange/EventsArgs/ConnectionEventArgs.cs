@@ -1,5 +1,6 @@
 ﻿namespace TelephoneExchange.EventsArgs
 {
+    // TODO remove if unused
     public class ConnectionEventArgs
     {
         public string PhoneNumber { get; set; }

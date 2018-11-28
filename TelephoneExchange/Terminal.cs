@@ -9,103 +9,68 @@ namespace TelephoneExchange
 {
     public class Terminal
     {
-        public string PhoneNumber { get; set; }
+        private Port _port;
+
+        private bool _isConnected = false;
+
+        private bool _isRinging;
 
         public Action<string> Log { get; set; } = null;
 
-        public event EventHandler<CallEventArgs> OutgoingCall;
+        public event EventHandler<IncomingCallEventArgs> IncomingCall;
 
-        public event EventHandler<CallEventArgs> IncomingCall;
-
-        public event EventHandler<CallEventArgs> RejectCall;
-
-        public event EventHandler<CallEventArgs> AnswerCall;
-
-        public event EventHandler<ConnectionEventArgs> Connect;
-
-        public event EventHandler Disconnect;
-
-        public void NotificationAboutIncomingCall(object sender, CallEventArgs e)
+        public void NotificationAboutIncomingCall(object sender, IncomingCallEventArgs e)
         {
-            Log?.Invoke($"{e.SenderPhoneNumber} is calling {PhoneNumber}");
+            Log?.Invoke($"{e.SenderPhoneNumber} is calling {_port.PhoneNumber}");
 
             OnIncomingCall(e);
         }
 
         public void Call(string number)
         {
-            var args = new CallEventArgs(PhoneNumber, number);
-
-            OnOutgoingCall(args);
+            _port.Call(number);
         }
 
-        // TODO args
-        public void Answer()
+        // decline incoming call 
+        public void Decline()
         {
-            Log?.Invoke($"{PhoneNumber} have answered a call");
 
-            var e = new CallEventArgs("", PhoneNumber)
-            {
-                StartTime = DateTime.UtcNow
-            };
-
-            OnAnswerCall(e);
         }
 
-        // TODO add args for call reject
+        // reject outgoing or call in progress
         public void Reject()
         {
-            Log?.Invoke($"{PhoneNumber} have rejected a call");
 
-            //create new args class
-            OnRejectCall(new CallEventArgs("", PhoneNumber));
         }
 
-        public void CallWasRejected(object sender, CallEventArgs e)
+        public void ConnectToPort(Port port)
         {
-            Log?.Invoke($"Call from {e.SenderPhoneNumber} was rejected by {e.ReceiverPhoneNumber}");
-        }
+            if(_isConnected)
+                return;
 
-        public void ConnectToPort()
-        {
-            var args = new ConnectionEventArgs(this.PhoneNumber);
+            _port = port;
+            _isConnected = true;
 
-            OnConnect(args);
+            // TODO subscribe for necessary events
+            _port.Incoming += NotificationAboutIncomingCall;
+            _port.ConnectWithTerminal();
         }
 
         public void DisconnectFromPort()
         {
-            OnDisconnect();
+            if(!_isConnected)
+                return;
+
+            _port.Incoming -= NotificationAboutIncomingCall;
+            _port.ConnectWithTerminal();
+
+            _port = null;
+            _isConnected = false;
         }
 
-        protected virtual void OnConnect(ConnectionEventArgs e)
-        {
-            Connect?.Invoke(this, e);
-        }
-
-        protected virtual void OnDisconnect()
-        {
-            Disconnect?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnOutgoingCall(CallEventArgs e)
-        {
-            OutgoingCall?.Invoke(this, e);
-        }
-
-        protected virtual void OnIncomingCall(CallEventArgs e)
+        protected virtual void OnIncomingCall(IncomingCallEventArgs e)
         {
             IncomingCall?.Invoke(this, e);
-        }
-
-        protected virtual void OnRejectCall(CallEventArgs e)
-        {
-            RejectCall?.Invoke(this, e);
-        }
-
-        protected virtual void OnAnswerCall(CallEventArgs e)
-        {
-            AnswerCall?.Invoke(this, e);
         }
     }
 }

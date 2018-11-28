@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
 
@@ -8,109 +9,106 @@ namespace TelephoneExchange
 {
     public class Station
     {
-        List<Port> ports = new List<Port>();
+
+        private List<Port> ports = new List<Port>();
 
         //List<Port> expectAnswer = new List<Port>();
 
-        Dictionary<Port, Port> expectAnswer = new Dictionary<Port, Port>();
+        private Dictionary<Port, Port> expectAnswer = new Dictionary<Port, Port>();
 
-        Dictionary<Port, Port> callInProgress = new Dictionary<Port, Port>();
+        private Dictionary<Port, Port> callInProgress = new Dictionary<Port, Port>();
 
-        public event EventHandler<CallEventArgs> Call;
-
-        public event EventHandler<CallEventArgs> CallReject;
-
+        //subscribe here
         public Station(List<Port> ports)
         {
             this.ports = ports;
+            InitialSubscribeToPorts(this.ports);
         }
 
-        public void ReportPortAboutIncomingCall(object sender, CallEventArgs e)
+        // check in port number
+        private event EventHandler<IncomingCallEventArgs> IncomingCall;
+
+        // check in port number
+        private event EventHandler<CallResultEventArgs> OutgoingCallResult;
+
+        public string GetPortsState()
         {
-            var receiverPort = ports.Find(x => x.PhoneNumber == e.ReceiverPhoneNumber);
+            var info = new StringBuilder();
 
-            if (receiverPort.State == PortState.Online)
+            foreach (var port in ports)
             {
-                //mb switch places
-                expectAnswer.Add((Port)sender, receiverPort);
-
-                OnCall(e, receiverPort);
+                info.Append(ports.IndexOf(port)).Append(" " + port.State).Append("\n");
             }
-            else
+
+            return info.ToString();
+        }
+
+
+        public void ProcessIncomingCall(Port portFrom, string phoneNumberTo)
+        {
+            var args = new IncomingCallEventArgs(portFrom.PhoneNumber, phoneNumberTo);
+
+            OnIncomingCall(args);
+
+            // TODO
+            var timer = new System.Timers.Timer(3000)
             {
-                //say that receiving number is busy
+                AutoReset = false
+            };
+            timer.Elapsed += (sender, eventArgs) =>
+                {
+                    //OnOutgoingCallResult(new CallResultEventArgs(phoneNumberTo, AnswerType.NotAnswered));
+                    Console.WriteLine("TIMER!");
+                };
+            timer.Start();
+        }
+
+        private void InitialSubscribeToPorts(IEnumerable<Port> ports)
+        {
+            foreach (var port in ports)
+            {
+                InitialSubscribeToPort(port);
             }
         }
 
-        // TODO refactor if states and add event for billing
-        public void ReportPortAboutCallReject(object sender, CallEventArgs e)
+        private void InitialSubscribeToPort(Port port)
         {
-            var receiverPort = (Port)sender;
-            Port senderPort = null;
-            //var senderPort = expectAnswer[receiverPort];
-
-            //expectAnswer.Remove(receiverPort);
-
-            //OnCallReject(e, senderPort);var myKey = types.FirstOrDefault(x => x.Value == "one").Key;
-
-            if (expectAnswer.ContainsKey(receiverPort))
-            {
-                senderPort = expectAnswer[receiverPort];
-
-                expectAnswer.Remove(receiverPort);
-
-                e.SenderPhoneNumber = receiverPort.PhoneNumber;
-            }
-            else if (expectAnswer.ContainsValue(receiverPort))
-            {
-                // add check for default
-                senderPort = expectAnswer.FirstOrDefault(x => x.Value == receiverPort).Key;
-
-                expectAnswer.Remove(senderPort);
-
-                e.SenderPhoneNumber = senderPort.PhoneNumber;
-            }
-            // TODO notify billing system in these cases
-            else if (callInProgress.ContainsKey(receiverPort))
-            {
-                senderPort = callInProgress[receiverPort];
-
-                callInProgress.Remove(receiverPort);
-
-                e.SenderPhoneNumber = receiverPort.PhoneNumber;
-            }
-            else
-            {
-                senderPort = callInProgress.FirstOrDefault(x => x.Value == receiverPort).Key;
-
-                callInProgress.Remove(senderPort);
-
-                e.SenderPhoneNumber = senderPort.PhoneNumber;
-            }
-
-
-            OnCallReject(e, senderPort);
+            port.Station = this;
+            port.StateChanged += ProcessPortState;
         }
 
-        public void ReportPortAboutCallAnswer(object sender, CallEventArgs e)
+        private void ProcessPortState(object sender, EventArgs e)
         {
-            var senderPort = expectAnswer.FirstOrDefault(x => x.Value == (Port)sender).Key;
+            var port = (Port) sender;
 
-            expectAnswer.Remove(senderPort);
-
-            callInProgress.Add(senderPort, (Port)sender);
+            if (port.State == PortState.Online)
+            {
+                SubscribePort(port);
+            }
+            else if(port.State == PortState.Offline)
+            {
+                UnsubscribePort(port);
+            }
         }
 
-        protected virtual void OnCall(CallEventArgs e, Port target)
+        private void UnsubscribePort(Port port)
         {
-            // TODO check and create method not to duplicate code
-            (Call?.GetInvocationList().First(x => x.Target == target) as EventHandler<CallEventArgs>)?.Invoke(this, e);
-            //Call?.Invoke(this, e);
+            throw new NotImplementedException();
         }
 
-        protected virtual void OnCallReject(CallEventArgs e, Port target)
+        private void SubscribePort(Port port)
         {
-            (CallReject?.GetInvocationList().First(x => x.Target == target) as EventHandler<CallEventArgs>)?.Invoke(this, e);
+            this.IncomingCall += port.IncomingCall;
+        }
+
+        protected virtual void OnIncomingCall(IncomingCallEventArgs e)
+        {
+            IncomingCall?.Invoke(this, e);
+        }
+
+        protected virtual void OnOutgoingCallResult(CallResultEventArgs e)
+        {
+            OutgoingCallResult?.Invoke(this, e);
         }
     }
 }

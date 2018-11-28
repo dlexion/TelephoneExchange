@@ -7,93 +7,65 @@ namespace TelephoneExchange
     public class Port
     {
         // TODO should initialization be in constructor?
-        public PortState State { get; set; } = PortState.Offline;
+        private PortState _state = PortState.Offline;
 
-        public string PhoneNumber { get; private set; }
-
-        public event EventHandler<CallEventArgs> Outgoing;
-
-        public event EventHandler<CallEventArgs> Incoming;
-
-        public event EventHandler<CallEventArgs> CallReject;
-
-        public event EventHandler<CallEventArgs> CallAnswer;
-
-        public event EventHandler<CallEventArgs> CallWasRejectedFromReceiver;
-
-        public void ReportStationAboutOutgoingCall(object sender, CallEventArgs e)
+        public Port(string phoneNumber)
         {
-            if (State == PortState.Online)
+            PhoneNumber = phoneNumber;
+        }
+
+        public string PhoneNumber { get; }
+
+        public Station Station { get; set; }
+
+        public PortState State
+        {
+            get => _state;
+            set
             {
-                State = PortState.Busy;
-                OnOutgoing(e);
+                _state = value;
+                OnStateChanged();
             }
         }
 
-        public void ReportTerminalAboutIncomingCall(object sender, CallEventArgs e)
+        public event EventHandler StateChanged;
+
+        public event EventHandler<IncomingCallEventArgs> Incoming;
+
+        public void Call(string phoneNumber)
         {
+            Station.ProcessIncomingCall(this, phoneNumber);
+
             State = PortState.Busy;
-
-            OnIncoming(e);
         }
 
-        public void ReportStationAboutCallReject(object sender, CallEventArgs e)
-        {
-            if (State == PortState.Busy)
-            {
-                State = PortState.Online;
-
-                OnCallReject(e);
-            }
-        }
-
-        public void ReportTerminalAboutCallReject(object sender, CallEventArgs e)
+        public void ConnectWithTerminal()
         {
             State = PortState.Online;
-
-            OnCallWasRejectedFromReceiver(e);
         }
 
-        public void ReportStationAboutCallAnswer(object sender, CallEventArgs e)
-        {
-            OnCallAnswer(e);
-        }
-
-        public void ConnectWithTerminal(object sender, ConnectionEventArgs e)
-        {
-            PhoneNumber = e.PhoneNumber;
-
-            State = PortState.Online;
-        }
-
-        public void DisconnectWithTerminal(object sender, EventArgs e)
+        public void DisconnectWithTerminal()
         {
             State = PortState.Offline;
         }
 
-        private void OnOutgoing(CallEventArgs e)
+        public void IncomingCall(object sender, IncomingCallEventArgs e)
         {
-            Outgoing?.Invoke(this, e);
+            if (PhoneNumber == e.ReceiverPhoneNumber)
+            {
+                State = PortState.Busy;
+                OnIncoming(e);
+            }
         }
 
-        protected virtual void OnIncoming(CallEventArgs e)
+        protected virtual void OnStateChanged()
+        {
+            StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnIncoming(IncomingCallEventArgs e)
         {
             Incoming?.Invoke(this, e);
-        }
-
-        protected virtual void OnCallReject(CallEventArgs e)
-        {
-            CallReject?.Invoke(this, e);
-        }
-
-        protected virtual void OnCallWasRejectedFromReceiver(CallEventArgs e)
-        {
-            CallWasRejectedFromReceiver?.Invoke(this, e);
-        }
-
-        protected virtual void OnCallAnswer(CallEventArgs e)
-        {
-            CallAnswer?.Invoke(this, e);
         }
     }
 }
