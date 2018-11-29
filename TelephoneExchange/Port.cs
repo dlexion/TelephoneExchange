@@ -60,8 +60,11 @@ namespace TelephoneExchange
         {
             if (PhoneNumber == e.ReceiverPhoneNumber)
             {
-                State = PortState.Busy;
-                OnIncoming(e);
+                if (State == PortState.Online)
+                {
+                    State = PortState.Busy;
+                    OnIncoming(e);
+                }
             }
         }
 

@@ -39,7 +39,7 @@ namespace UI
 
             Console.WriteLine(station.GetPortsState());
 
-            t.Call(port2.PhoneNumber);
+            t.Call(port.PhoneNumber);
 
             Console.WriteLine(station.GetPortsState());
 
