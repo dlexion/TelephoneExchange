@@ -12,7 +12,8 @@ namespace TelephoneExchange
     {
         private Port _port;
 
-        private bool _isConnected = false;
+        // false as default
+        private bool _isConnected;
 
         private bool _isRinging;
 
@@ -26,7 +27,8 @@ namespace TelephoneExchange
 
             _isRinging = true;
 
-            OnIncomingCall(e);
+            //OnIncomingCall(e);
+            //Decline();
         }
 
         public void Call(string number)
@@ -37,7 +39,11 @@ namespace TelephoneExchange
         // decline incoming call 
         public void Decline()
         {
+            if (!_isRinging)
+                return;
 
+            _isRinging = false;
+            _port.Decline();
         }
 
         // reject outgoing or call in progress
@@ -75,9 +81,10 @@ namespace TelephoneExchange
 
                     break;
                 case AnswerType.Rejected:
+                    Log($"{e.ReceiverPhoneNumber} rejected call");
                     break;
                 case AnswerType.NotAnswered:
-                    Log($"{e.SenderPhoneNumber} did not answer");
+                    Log($"{e.ReceiverPhoneNumber} did not answer");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

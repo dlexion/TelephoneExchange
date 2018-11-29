@@ -42,9 +42,9 @@ namespace TelephoneExchange
 
         public void Call(string phoneNumber)
         {
-            Station.ProcessIncomingCall(this, phoneNumber);
-
             State = PortState.Busy;
+
+            Station.ProcessIncomingCall(PhoneNumber, phoneNumber);
         }
 
         public void ConnectWithTerminal()
@@ -97,17 +97,21 @@ namespace TelephoneExchange
         {
             if (PhoneNumber == e.ReceiverPhoneNumber)
             {
-                if (State == PortState.Busy)
-                {
-                    State = PortState.Online;
-                    OnAbortIncoming(e);
-                }
+                State = PortState.Online;
+                OnAbortIncoming(e);
+
             }
         }
 
         protected virtual void OnOutgoingCallResult(CallResultEventArgs e)
         {
             OutgoingCallResult?.Invoke(this, e);
+        }
+
+        public void Decline()
+        {
+            State = PortState.Online;
+            Station.ProcessDecliningCall(this);
         }
     }
 }

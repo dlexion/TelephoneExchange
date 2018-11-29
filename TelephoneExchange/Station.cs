@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
+using System.Timers;
 
 namespace TelephoneExchange
 {
@@ -11,19 +12,20 @@ namespace TelephoneExchange
     {
         private const double AnswerDelay = 300;
 
-        private List<Port> ports = new List<Port>();
+        private List<Port> _ports = new List<Port>();
 
-        //List<Port> expectAnswer = new List<Port>();
+        // key is sender, value is receiver
+        private Dictionary<string, string> expectAnswer = new Dictionary<string, string>();
 
-        private Dictionary<Port, Port> expectAnswer = new Dictionary<Port, Port>();
+        private Dictionary<string, Timer> timersToAbort = new Dictionary<string, Timer>();
 
         private Dictionary<Port, Port> callInProgress = new Dictionary<Port, Port>();
 
         //subscribe here
         public Station(List<Port> ports)
         {
-            this.ports = ports;
-            InitialSubscribeToPorts(this.ports);
+            this._ports = ports;
+            InitialSubscribeToPorts(this._ports);
         }
 
         // check in port number
@@ -38,33 +40,45 @@ namespace TelephoneExchange
         {
             var info = new StringBuilder();
 
-            foreach (var port in ports)
+            foreach (var port in _ports)
             {
-                info.Append(ports.IndexOf(port)).Append(" " + port.State).Append("\n");
+                info.Append(_ports.IndexOf(port)).Append(" " + port.State).Append("\n");
             }
 
             return info.ToString();
         }
 
-
-        public void ProcessIncomingCall(Port portFrom, string phoneNumberTo)
+        // TODO phone number instead of Port instance
+        public void ProcessIncomingCall(string phoneNumberFrom, string phoneNumberTo)
         {
-            var args = new IncomingCallEventArgs(portFrom.PhoneNumber, phoneNumberTo);
+            expectAnswer.Add(phoneNumberFrom, phoneNumberTo);
+
+            var args = new IncomingCallEventArgs(phoneNumberFrom, phoneNumberTo);
 
             OnIncomingCall(args);
 
+            var timer = CreateTimer(phoneNumberFrom, phoneNumberTo, args);
+
+            timersToAbort.Add(phoneNumberFrom, timer);
+        }
+
+        private Timer CreateTimer(string phoneNumberFrom, string phoneNumberTo, IncomingCallEventArgs args)
+        {
             // TODO
-            var timer = new System.Timers.Timer(AnswerDelay)
+            var timer = new Timer(AnswerDelay)
             {
                 AutoReset = false
             };
             timer.Elapsed += (sender, eventArgs) =>
-                {
-                    OnAbortIncomingCall(args);
-                    OnOutgoingCallResult(new CallResultEventArgs(portFrom.PhoneNumber, AnswerType.NotAnswered));
-                    //Console.WriteLine("TIMER!");
-                };
+            {
+                OnAbortIncomingCall(args);
+                OnOutgoingCallResult(new CallResultEventArgs(phoneNumberFrom, AnswerType.NotAnswered)
+                { ReceiverPhoneNumber = phoneNumberTo });
+                Console.WriteLine("TIMER!");
+            };
             timer.Start();
+
+            return timer;
         }
 
         private void InitialSubscribeToPorts(IEnumerable<Port> ports)
@@ -121,6 +135,20 @@ namespace TelephoneExchange
         protected virtual void OnAbortIncomingCall(IncomingCallEventArgs e)
         {
             AbortIncomingCall?.Invoke(this, e);
+        }
+
+        public void ProcessDecliningCall(Port declinedPort)
+        {
+            var senderNumber = expectAnswer.FirstOrDefault(x => x.Value == declinedPort.PhoneNumber).Key;
+
+            // dispose timer
+            timersToAbort[senderNumber].Dispose();
+            timersToAbort.Remove(senderNumber);
+
+            expectAnswer.Remove(senderNumber);
+
+            OnOutgoingCallResult(new CallResultEventArgs(senderNumber, AnswerType.Rejected)
+            { ReceiverPhoneNumber = declinedPort.PhoneNumber });
         }
     }
 }

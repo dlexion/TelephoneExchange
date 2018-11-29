@@ -13,6 +13,8 @@ namespace TelephoneExchange.EventsArgs
 
         public string SenderPhoneNumber { get; set; }
 
+        public string ReceiverPhoneNumber { get; set; }
+
         public AnswerType AnswerType { get; set; }
 
     }

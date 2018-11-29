@@ -43,13 +43,14 @@ namespace UI
 
             Console.WriteLine(station.GetPortsState());
 
-            Thread.Sleep(1000);
+            //t2.Decline();
+            //Thread.Sleep(1000);
 
 
             //t.Reject();
 
             Console.WriteLine(station.GetPortsState());
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         // TODO give user ability to choose what to do with incoming call
