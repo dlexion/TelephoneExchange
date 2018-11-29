@@ -31,7 +31,6 @@ namespace TelephoneExchange
             }
         }
 
-        // TODO args with previous state
         public event EventHandler<StateChangedEventArgs> StateChanged;
 
         public event EventHandler<IncomingCallEventArgs> Incoming;

@@ -28,10 +28,8 @@ namespace TelephoneExchange
             InitialSubscribeToPorts(this._ports);
         }
 
-        // check in port number
         private event EventHandler<IncomingCallEventArgs> IncomingCall;
 
-        // check in port number
         private event EventHandler<CallResultEventArgs> OutgoingCallResult;
 
         private event EventHandler<IncomingCallEventArgs> AbortIncomingCall;
@@ -48,7 +46,6 @@ namespace TelephoneExchange
             return info.ToString();
         }
 
-        // TODO phone number instead of Port instance
         public void ProcessIncomingCall(string phoneNumberFrom, string phoneNumberTo)
         {
             expectAnswer.Add(phoneNumberFrom, phoneNumberTo);
@@ -64,7 +61,6 @@ namespace TelephoneExchange
 
         private Timer CreateTimer(string phoneNumberFrom, string phoneNumberTo, IncomingCallEventArgs args)
         {
-            // TODO
             var timer = new Timer(AnswerDelay)
             {
                 AutoReset = false
@@ -74,7 +70,6 @@ namespace TelephoneExchange
                 OnAbortIncomingCall(args);
                 OnOutgoingCallResult(new CallResultEventArgs(phoneNumberFrom, AnswerType.NotAnswered)
                 { ReceiverPhoneNumber = phoneNumberTo });
-                Console.WriteLine("TIMER!");
             };
             timer.Start();
 

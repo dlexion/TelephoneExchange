@@ -19,6 +19,7 @@ namespace TelephoneExchange
 
         public Action<string> Log { get; set; } = null;
 
+        // for UI
         public event EventHandler<IncomingCallEventArgs> IncomingCall;
 
         public void NotificationAboutIncomingCall(object sender, IncomingCallEventArgs e)
@@ -28,7 +29,6 @@ namespace TelephoneExchange
             _isRinging = true;
 
             //OnIncomingCall(e);
-            //Decline();
         }
 
         public void Call(string number)
