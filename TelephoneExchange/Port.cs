@@ -99,7 +99,6 @@ namespace TelephoneExchange
             {
                 State = PortState.Online;
                 OnAbortIncoming(e);
-
             }
         }
 
@@ -111,7 +110,13 @@ namespace TelephoneExchange
         public void Decline()
         {
             State = PortState.Online;
-            Station.ProcessDecliningCall(this);
+            Station.ProcessDeclinedCall(PhoneNumber);
+        }
+
+        public void RejectCall()
+        {
+            State = PortState.Online;
+            Station.ProcessRejectedCall(PhoneNumber);
         }
     }
 }

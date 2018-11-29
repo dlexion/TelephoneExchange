@@ -46,8 +46,7 @@ namespace UI
             //t2.Decline();
             //Thread.Sleep(1000);
 
-
-            //t.Reject();
+            t.Reject();
 
             Console.WriteLine(station.GetPortsState());
             //Console.ReadKey();

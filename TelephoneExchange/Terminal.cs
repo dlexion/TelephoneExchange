@@ -49,7 +49,7 @@ namespace TelephoneExchange
         // reject outgoing or call in progress
         public void Reject()
         {
-
+            _port.RejectCall();
         }
 
         public void Answer()

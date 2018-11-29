@@ -137,18 +137,33 @@ namespace TelephoneExchange
             AbortIncomingCall?.Invoke(this, e);
         }
 
-        public void ProcessDecliningCall(Port declinedPort)
+        public void ProcessDeclinedCall(string declinedPhoneNumber)
         {
-            var senderNumber = expectAnswer.FirstOrDefault(x => x.Value == declinedPort.PhoneNumber).Key;
+            var senderNumber = expectAnswer.FirstOrDefault(x => x.Value == declinedPhoneNumber).Key;
 
             // dispose timer
-            timersToAbort[senderNumber].Dispose();
-            timersToAbort.Remove(senderNumber);
+            DisposeTimer(senderNumber);
 
             expectAnswer.Remove(senderNumber);
 
             OnOutgoingCallResult(new CallResultEventArgs(senderNumber, AnswerType.Rejected)
-            { ReceiverPhoneNumber = declinedPort.PhoneNumber });
+            { ReceiverPhoneNumber = declinedPhoneNumber });
+        }
+
+        public void ProcessRejectedCall(string phoneNumber)
+        {
+            if (expectAnswer.ContainsKey(phoneNumber))
+            {
+                DisposeTimer(phoneNumber);
+
+                OnAbortIncomingCall(new IncomingCallEventArgs(phoneNumber, expectAnswer[phoneNumber]));
+            }
+        }
+
+        private void DisposeTimer(string key)
+        {
+            timersToAbort[key].Dispose();
+            timersToAbort.Remove(key);
         }
     }
 }
