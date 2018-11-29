@@ -118,5 +118,10 @@ namespace TelephoneExchange
             State = PortState.Online;
             Station.ProcessRejectedCall(PhoneNumber);
         }
+
+        public void Answer()
+        {
+            Station.ProcessAnsweredCall(PhoneNumber);
+        }
     }
 }

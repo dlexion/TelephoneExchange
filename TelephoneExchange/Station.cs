@@ -19,7 +19,7 @@ namespace TelephoneExchange
 
         private Dictionary<string, Timer> timersToAbort = new Dictionary<string, Timer>();
 
-        private Dictionary<Port, Port> callInProgress = new Dictionary<Port, Port>();
+        private Dictionary<string, string> callInProgress = new Dictionary<string, string>();
 
         //subscribe here
         public Station(List<Port> ports)
@@ -158,12 +158,53 @@ namespace TelephoneExchange
 
                 OnAbortIncomingCall(new IncomingCallEventArgs(phoneNumber, expectAnswer[phoneNumber]));
             }
+            else if (callInProgress.ContainsKey(phoneNumber) || callInProgress.ContainsValue(phoneNumber))
+            {
+                //string senderNumber;
+                //string receiverNumber;
+                string anotherNumber;
+
+                if (callInProgress.ContainsKey(phoneNumber))
+                {
+                    //senderNumber = phoneNumber;
+                    //receiverNumber = callInProgress[phoneNumber];
+
+                    anotherNumber = callInProgress[phoneNumber];
+                }
+                else
+                {
+                    //receiverNumber = phoneNumber;
+                    //senderNumber = callInProgress.FirstOrDefault(x => x.Value == receiverNumber).Key;
+
+                    anotherNumber = callInProgress.FirstOrDefault(x => x.Value == phoneNumber).Key;
+                }
+
+                OnOutgoingCallResult(new CallResultEventArgs(anotherNumber, AnswerType.Rejected)
+                { ReceiverPhoneNumber = phoneNumber });
+            }
         }
 
         private void DisposeTimer(string key)
         {
             timersToAbort[key].Dispose();
             timersToAbort.Remove(key);
+        }
+
+        public void ProcessAnsweredCall(string receiverPhoneNumber)
+        {
+            var senderNumber = expectAnswer.FirstOrDefault(x => x.Value == receiverPhoneNumber).Key;
+
+            if (expectAnswer.ContainsKey(senderNumber))
+            {
+                DisposeTimer(senderNumber);
+
+                expectAnswer.Remove(senderNumber);
+
+                callInProgress.Add(senderNumber, receiverPhoneNumber);
+
+                OnOutgoingCallResult(new CallResultEventArgs(senderNumber, AnswerType.Answered)
+                    { ReceiverPhoneNumber = receiverPhoneNumber });
+            }
         }
     }
 }

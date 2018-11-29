@@ -56,6 +56,8 @@ namespace TelephoneExchange
         {
             if (!_isRinging)
                 return;
+
+            _port.Answer();
         }
 
         public void ConnectToPort(Port port)
@@ -78,10 +80,10 @@ namespace TelephoneExchange
             switch (e.AnswerType)
             {
                 case AnswerType.Answered:
-
+                    Log($"{e.ReceiverPhoneNumber} answered a call. Now call is in progress");
                     break;
                 case AnswerType.Rejected:
-                    Log($"{e.ReceiverPhoneNumber} rejected call");
+                    Log($"{e.ReceiverPhoneNumber} rejected a call");
                     break;
                 case AnswerType.NotAnswered:
                     Log($"{e.ReceiverPhoneNumber} did not answer");

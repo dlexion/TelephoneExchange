@@ -46,10 +46,14 @@ namespace UI
             //t2.Decline();
             //Thread.Sleep(1000);
 
-            t.Reject();
+            t2.Answer();
 
             Console.WriteLine(station.GetPortsState());
-            //Console.ReadKey();
+
+            t.Reject();
+            Console.WriteLine(station.GetPortsState());
+
+            Console.ReadKey();
         }
 
         // TODO give user ability to choose what to do with incoming call
