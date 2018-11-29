@@ -4,7 +4,6 @@
     {
         Online,
         Busy,
-        Offline,
-        CallInProgress
+        Offline
     }
 }

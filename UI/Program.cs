@@ -45,10 +45,10 @@ namespace UI
 
             Thread.Sleep(1000);
 
+
+            //t.Reject();
+
             Console.WriteLine(station.GetPortsState());
-
-            t.Reject();
-
             Console.ReadKey();
         }
 

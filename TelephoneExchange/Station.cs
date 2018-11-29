@@ -9,6 +9,7 @@ namespace TelephoneExchange
 {
     public class Station
     {
+        private const double AnswerDelay = 300;
 
         private List<Port> ports = new List<Port>();
 
@@ -31,6 +32,8 @@ namespace TelephoneExchange
         // check in port number
         private event EventHandler<CallResultEventArgs> OutgoingCallResult;
 
+        private event EventHandler<IncomingCallEventArgs> AbortIncomingCall;
+
         public string GetPortsState()
         {
             var info = new StringBuilder();
@@ -51,14 +54,15 @@ namespace TelephoneExchange
             OnIncomingCall(args);
 
             // TODO
-            var timer = new System.Timers.Timer(3000)
+            var timer = new System.Timers.Timer(AnswerDelay)
             {
                 AutoReset = false
             };
             timer.Elapsed += (sender, eventArgs) =>
                 {
-                    //OnOutgoingCallResult(new CallResultEventArgs(phoneNumberTo, AnswerType.NotAnswered));
-                    Console.WriteLine("TIMER!");
+                    OnAbortIncomingCall(args);
+                    OnOutgoingCallResult(new CallResultEventArgs(portFrom.PhoneNumber, AnswerType.NotAnswered));
+                    //Console.WriteLine("TIMER!");
                 };
             timer.Start();
         }
@@ -77,20 +81,21 @@ namespace TelephoneExchange
             port.StateChanged += ProcessPortState;
         }
 
-        private void ProcessPortState(object sender, EventArgs e)
+        private void ProcessPortState(object sender, StateChangedEventArgs e)
         {
-            var port = (Port) sender;
+            var port = (Port)sender;
 
-            if (port.State == PortState.Online)
+            if (port.State == PortState.Online && e.PreviousState == PortState.Offline)
             {
                 SubscribePort(port);
             }
-            else if(port.State == PortState.Offline)
+            else if (port.State == PortState.Offline)
             {
                 UnsubscribePort(port);
             }
         }
 
+        // TODO
         private void UnsubscribePort(Port port)
         {
             throw new NotImplementedException();
@@ -99,6 +104,8 @@ namespace TelephoneExchange
         private void SubscribePort(Port port)
         {
             this.IncomingCall += port.IncomingCall;
+            this.AbortIncomingCall += port.AbortCall;
+            this.OutgoingCallResult += port.CallResult;
         }
 
         protected virtual void OnIncomingCall(IncomingCallEventArgs e)
@@ -109,6 +116,11 @@ namespace TelephoneExchange
         protected virtual void OnOutgoingCallResult(CallResultEventArgs e)
         {
             OutgoingCallResult?.Invoke(this, e);
+        }
+
+        protected virtual void OnAbortIncomingCall(IncomingCallEventArgs e)
+        {
+            AbortIncomingCall?.Invoke(this, e);
         }
     }
 }

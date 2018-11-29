@@ -23,14 +23,22 @@ namespace TelephoneExchange
             get => _state;
             set
             {
+                var args = new StateChangedEventArgs(State);
+
                 _state = value;
-                OnStateChanged();
+
+                OnStateChanged(args);
             }
         }
 
-        public event EventHandler StateChanged;
+        // TODO args with previous state
+        public event EventHandler<StateChangedEventArgs> StateChanged;
 
         public event EventHandler<IncomingCallEventArgs> Incoming;
+
+        public event EventHandler<IncomingCallEventArgs> AbortIncoming;
+
+        public event EventHandler<CallResultEventArgs> OutgoingCallResult;
 
         public void Call(string phoneNumber)
         {
@@ -58,14 +66,48 @@ namespace TelephoneExchange
             }
         }
 
-        protected virtual void OnStateChanged()
+        public void CallResult(object sender, CallResultEventArgs e)
         {
-            StateChanged?.Invoke(this, EventArgs.Empty);
+            if (PhoneNumber == e.SenderPhoneNumber)
+            {
+                if (e.AnswerType != AnswerType.Answered)
+                {
+                    State = PortState.Online;
+                }
+                OnOutgoingCallResult(e);
+            }
+        }
+
+        protected virtual void OnStateChanged(StateChangedEventArgs e)
+        {
+            StateChanged?.Invoke(this, e);
         }
 
         protected virtual void OnIncoming(IncomingCallEventArgs e)
         {
             Incoming?.Invoke(this, e);
+        }
+
+        protected virtual void OnAbortIncoming(IncomingCallEventArgs e)
+        {
+            AbortIncoming?.Invoke(this, e);
+        }
+
+        public void AbortCall(object sender, IncomingCallEventArgs e)
+        {
+            if (PhoneNumber == e.ReceiverPhoneNumber)
+            {
+                if (State == PortState.Busy)
+                {
+                    State = PortState.Online;
+                    OnAbortIncoming(e);
+                }
+            }
+        }
+
+        protected virtual void OnOutgoingCallResult(CallResultEventArgs e)
+        {
+            OutgoingCallResult?.Invoke(this, e);
         }
     }
 }

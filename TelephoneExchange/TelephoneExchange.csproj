@@ -46,6 +46,7 @@
     <Compile Include="EventsArgs\CallResultEventArgs.cs" />
     <Compile Include="EventsArgs\ConnectionEventArgs.cs" />
     <Compile Include="EventsArgs\IncomingCallEventArgs.cs" />
+    <Compile Include="EventsArgs\StateChangedEventArgs.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Enums\PortState.cs" />
     <Compile Include="Station.cs" />

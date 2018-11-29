@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
 
 namespace TelephoneExchange
@@ -22,6 +23,8 @@ namespace TelephoneExchange
         public void NotificationAboutIncomingCall(object sender, IncomingCallEventArgs e)
         {
             Log?.Invoke($"{e.SenderPhoneNumber} is calling {_port.PhoneNumber}");
+
+            _isRinging = true;
 
             OnIncomingCall(e);
         }
@@ -43,9 +46,15 @@ namespace TelephoneExchange
 
         }
 
+        public void Answer()
+        {
+            if (!_isRinging)
+                return;
+        }
+
         public void ConnectToPort(Port port)
         {
-            if(_isConnected)
+            if (_isConnected)
                 return;
 
             _port = port;
@@ -53,12 +62,38 @@ namespace TelephoneExchange
 
             // TODO subscribe for necessary events
             _port.Incoming += NotificationAboutIncomingCall;
+            _port.AbortIncoming += PortOnAbortIncoming;
+            _port.OutgoingCallResult += CallResult;
             _port.ConnectWithTerminal();
+        }
+
+        private void CallResult(object sender, CallResultEventArgs e)
+        {
+            switch (e.AnswerType)
+            {
+                case AnswerType.Answered:
+
+                    break;
+                case AnswerType.Rejected:
+                    break;
+                case AnswerType.NotAnswered:
+                    Log($"{e.SenderPhoneNumber} did not answer");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void PortOnAbortIncoming(object sender, IncomingCallEventArgs e)
+        {
+            Log($"Call from {e.SenderPhoneNumber} was aborted");
+
+            _isRinging = false;
         }
 
         public void DisconnectFromPort()
         {
-            if(!_isConnected)
+            if (!_isConnected)
                 return;
 
             _port.Incoming -= NotificationAboutIncomingCall;
