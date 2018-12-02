@@ -6,7 +6,6 @@ namespace TelephoneExchange
 {
     public class Port
     {
-        // TODO should initialization be in constructor?
         private PortState _state = PortState.Offline;
 
         public Port(string phoneNumber)
@@ -15,8 +14,6 @@ namespace TelephoneExchange
         }
 
         public string PhoneNumber { get; }
-
-        //public Station Station { get; set; }
 
         public PortState State
         {
@@ -115,8 +112,11 @@ namespace TelephoneExchange
 
         public void RejectCall()
         {
-            State = PortState.Online;
-            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected));
+            if (State == PortState.Busy)
+            {
+                State = PortState.Online;
+                OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected));
+            }
         }
 
         public void Answer()

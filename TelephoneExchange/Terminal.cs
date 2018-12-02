@@ -24,7 +24,7 @@ namespace TelephoneExchange
 
             _isRinging = true;
 
-            //OnIncomingCall(e);
+            OnIncomingCall(e);
         }
 
         public void Call(string number)
@@ -53,7 +53,6 @@ namespace TelephoneExchange
             _port = port;
             _isConnected = true;
 
-            // TODO subscribe for necessary events
             _port.Incoming += NotificationAboutIncomingCall;
             _port.AbortIncoming += PortOnAbortIncoming;
             _port.ReturnedCallResult += OutgoingCallResult;
@@ -74,10 +73,10 @@ namespace TelephoneExchange
                     Log($"{e.SenderPhoneNumber} did not answer");
                     break;
                 case CallResult.NotExists:
-                    Log($"The number {e.SenderPhoneNumber} is wrong or offline");
+                    Log($"Number {e.SenderPhoneNumber} is wrong or offline");
                     break;
                 case CallResult.Busy:
-                    Log($"The number {e.SenderPhoneNumber} is busy");
+                    Log($"Number {e.SenderPhoneNumber} is busy");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -97,7 +96,9 @@ namespace TelephoneExchange
                 return;
 
             _port.Incoming -= NotificationAboutIncomingCall;
-            _port.ConnectWithTerminal();
+            _port.AbortIncoming -= PortOnAbortIncoming;
+            _port.ReturnedCallResult -= OutgoingCallResult;
+            _port.DisconnectWithTerminal();
 
             _port = null;
             _isConnected = false;
