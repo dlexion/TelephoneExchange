@@ -39,21 +39,21 @@ namespace UI
 
             Console.WriteLine(station.GetPortsState());
 
-            t.Call(port.PhoneNumber);
+            t.Call("123");
 
             Console.WriteLine(station.GetPortsState());
 
-            //t2.Decline();
+            //t2.Reject();
             //Thread.Sleep(1000);
 
-            t2.Answer();
+            //t2.Answer();
 
             Console.WriteLine(station.GetPortsState());
 
-            t.Reject();
+            //t2.Reject();
             Console.WriteLine(station.GetPortsState());
 
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         // TODO give user ability to choose what to do with incoming call

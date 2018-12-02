@@ -1,9 +1,11 @@
 ﻿namespace TelephoneExchange.Enums
 {
-    public enum AnswerType
+    public enum CallResult
     {
         Answered,
         Rejected,
-        NotAnswered
+        NotAnswered,
+        NotExists,
+        Busy
     }
 }

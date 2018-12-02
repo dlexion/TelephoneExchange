@@ -16,7 +16,7 @@ namespace TelephoneExchange
 
         public string PhoneNumber { get; }
 
-        public Station Station { get; set; }
+        //public Station Station { get; set; }
 
         public PortState State
         {
@@ -33,17 +33,21 @@ namespace TelephoneExchange
 
         public event EventHandler<StateChangedEventArgs> StateChanged;
 
-        public event EventHandler<IncomingCallEventArgs> Incoming;
+        public event EventHandler<CallEventArgs> Incoming;
 
-        public event EventHandler<IncomingCallEventArgs> AbortIncoming;
+        public event EventHandler<CallEventArgs> AbortIncoming;
 
-        public event EventHandler<CallResultEventArgs> OutgoingCallResult;
+        public event EventHandler<CallResultEventArgs> ReturnedCallResult;
+
+        public event EventHandler<CallResultEventArgs> IncomingCallResult;
+
+        public event EventHandler<CallEventArgs> Outgoing;
 
         public void Call(string phoneNumber)
         {
             State = PortState.Busy;
 
-            Station.ProcessIncomingCall(PhoneNumber, phoneNumber);
+            OnOutgoing(new CallEventArgs(PhoneNumber, phoneNumber));
         }
 
         public void ConnectWithTerminal()
@@ -56,7 +60,7 @@ namespace TelephoneExchange
             State = PortState.Offline;
         }
 
-        public void IncomingCall(object sender, IncomingCallEventArgs e)
+        public void IncomingCall(object sender, CallEventArgs e)
         {
             if (PhoneNumber == e.ReceiverPhoneNumber)
             {
@@ -68,15 +72,15 @@ namespace TelephoneExchange
             }
         }
 
-        public void CallResult(object sender, CallResultEventArgs e)
+        public void OutgoingCallResult(object sender, CallResultEventArgs e)
         {
-            if (PhoneNumber == e.SenderPhoneNumber)
+            if (PhoneNumber == e.ReceiverPhoneNumber)
             {
-                if (e.AnswerType != AnswerType.Answered)
+                if (e.CallResult != CallResult.Answered)
                 {
                     State = PortState.Online;
                 }
-                OnOutgoingCallResult(e);
+                OnReturnedCallResult(e);
             }
         }
 
@@ -85,17 +89,17 @@ namespace TelephoneExchange
             StateChanged?.Invoke(this, e);
         }
 
-        protected virtual void OnIncoming(IncomingCallEventArgs e)
+        protected virtual void OnIncoming(CallEventArgs e)
         {
             Incoming?.Invoke(this, e);
         }
 
-        protected virtual void OnAbortIncoming(IncomingCallEventArgs e)
+        protected virtual void OnAbortIncoming(CallEventArgs e)
         {
             AbortIncoming?.Invoke(this, e);
         }
 
-        public void AbortCall(object sender, IncomingCallEventArgs e)
+        public void AbortCall(object sender, CallEventArgs e)
         {
             if (PhoneNumber == e.ReceiverPhoneNumber)
             {
@@ -104,26 +108,30 @@ namespace TelephoneExchange
             }
         }
 
-        protected virtual void OnOutgoingCallResult(CallResultEventArgs e)
+        protected virtual void OnReturnedCallResult(CallResultEventArgs e)
         {
-            OutgoingCallResult?.Invoke(this, e);
-        }
-
-        public void Decline()
-        {
-            State = PortState.Online;
-            Station.ProcessDeclinedCall(PhoneNumber);
+            ReturnedCallResult?.Invoke(this, e);
         }
 
         public void RejectCall()
         {
             State = PortState.Online;
-            Station.ProcessRejectedCall(PhoneNumber);
+            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected));
         }
 
         public void Answer()
         {
-            Station.ProcessAnsweredCall(PhoneNumber);
+            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Answered));
+        }
+
+        protected virtual void OnIncomingCallResult(CallResultEventArgs e)
+        {
+            IncomingCallResult?.Invoke(this, e);
+        }
+
+        protected virtual void OnOutgoing(CallEventArgs e)
+        {
+            Outgoing?.Invoke(this, e);
         }
     }
 }

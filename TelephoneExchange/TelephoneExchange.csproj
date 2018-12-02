@@ -41,10 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\AnswerType.cs" />
-    <Compile Include="EventsArgs\CallEventArgs.cs" />
+    <Compile Include="Enums\CallResult.cs" />
     <Compile Include="EventsArgs\CallResultEventArgs.cs" />
-    <Compile Include="EventsArgs\IncomingCallEventArgs.cs" />
+    <Compile Include="EventsArgs\CallEventArgs.cs" />
     <Compile Include="EventsArgs\StateChangedEventArgs.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Enums\PortState.cs" />

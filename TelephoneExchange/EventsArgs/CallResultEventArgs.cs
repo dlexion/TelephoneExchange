@@ -5,17 +5,17 @@ namespace TelephoneExchange.EventsArgs
 {
     public class CallResultEventArgs : EventArgs
     {
-        public CallResultEventArgs(string senderPhoneNumber, AnswerType answerType)
+        public CallResultEventArgs(string senderPhoneNumber, string receiverPhoneNumber, CallResult callResult)
         {
             SenderPhoneNumber = senderPhoneNumber;
-            AnswerType = answerType;
+            ReceiverPhoneNumber = receiverPhoneNumber;
+            CallResult = callResult;
         }
 
         public string SenderPhoneNumber { get; set; }
 
         public string ReceiverPhoneNumber { get; set; }
 
-        public AnswerType AnswerType { get; set; }
-
+        public CallResult CallResult { get; set; }
     }
 }
