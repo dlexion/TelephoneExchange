@@ -15,11 +15,13 @@ namespace TelephoneExchange
         private readonly List<Port> _ports;
 
         // key is sender, value is receiver
-        private readonly Dictionary<string, string> expectAnswer = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _expectAnswer = new Dictionary<string, string>();
 
-        private readonly Dictionary<string, Timer> timersToAbortCall = new Dictionary<string, Timer>();
+        private readonly Dictionary<string, Timer> _timersToAbortCall = new Dictionary<string, Timer>();
 
-        private readonly Dictionary<string, string> callInProgress = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _callsInProgress = new Dictionary<string, string>();
+
+        private readonly Dictionary<string, DateTime> _timeCallStarted = new Dictionary<string, DateTime>();
 
         //subscribe here
         public Station(List<Port> ports)
@@ -33,6 +35,8 @@ namespace TelephoneExchange
         public event EventHandler<CallResultEventArgs> OutgoingCallResult;
 
         public event EventHandler<CallEventArgs> AbortIncomingCall;
+
+        public event EventHandler<CallInfoEventArgs> CallCompleted;
 
         public string GetPortsState()
         {
@@ -78,12 +82,13 @@ namespace TelephoneExchange
                 return;
             }
 
-            expectAnswer.Add(senderPhoneNumber, receiverPhoneNumber);
+
+            _expectAnswer.Add(senderPhoneNumber, receiverPhoneNumber);
 
             OnIncomingCall(new CallEventArgs(senderPhoneNumber, receiverPhoneNumber));
 
             var timer = CreateTimer(senderPhoneNumber, receiverPhoneNumber);
-            timersToAbortCall.Add(senderPhoneNumber, timer);
+            _timersToAbortCall.Add(senderPhoneNumber, timer);
         }
 
         private Timer CreateTimer(string senderPhoneNumber, string receiverPhoneNumber)
@@ -98,7 +103,7 @@ namespace TelephoneExchange
                     CallResult.NotAnswered));
                 OnAbortIncomingCall(new CallEventArgs(senderPhoneNumber, receiverPhoneNumber));
                 DisposeTimer(senderPhoneNumber);
-                expectAnswer.Remove(senderPhoneNumber);
+                _expectAnswer.Remove(senderPhoneNumber);
             };
             timer.Start();
 
@@ -157,10 +162,10 @@ namespace TelephoneExchange
             switch (e.CallResult)
             {
                 case CallResult.Answered:
-                    ProcessAnsweredCall(e.ReceiverPhoneNumber);
+                    ProcessAnsweredCall(e.ReceiverPhoneNumber, e.StartTime);
                     break;
                 case CallResult.Rejected:
-                    ProcessRejectedCall(e.ReceiverPhoneNumber);
+                    ProcessRejectedCall(e.ReceiverPhoneNumber, e.EndTime);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -182,23 +187,39 @@ namespace TelephoneExchange
             AbortIncomingCall?.Invoke(this, e);
         }
 
-        public void ProcessRejectedCall(string phoneNumber)
+        public void ProcessRejectedCall(string phoneNumber, DateTime endTime)
         {
             var senderNumber = string.Empty;
             var callResultReceiver = string.Empty;
 
-            if (expectAnswer.ContainsKey(phoneNumber) || expectAnswer.ContainsValue(phoneNumber))
+            if (_expectAnswer.ContainsKey(phoneNumber) || _expectAnswer.ContainsValue(phoneNumber))
             {
-                ProcessRejectedCall(phoneNumber, out senderNumber, out callResultReceiver, expectAnswer);
+                ProcessRejectedCall(phoneNumber, out senderNumber, out callResultReceiver, _expectAnswer);
                 DisposeTimer(senderNumber);
             }
-            else if (callInProgress.ContainsKey(phoneNumber) || callInProgress.ContainsValue(phoneNumber))
+            else if (_callsInProgress.ContainsKey(phoneNumber) || _callsInProgress.ContainsValue(phoneNumber))
             {
-                ProcessRejectedCall(phoneNumber, out senderNumber, out callResultReceiver, callInProgress);
+
+                ProcessRejectedCall(phoneNumber, out senderNumber, out callResultReceiver, _callsInProgress);
             }
 
             OnOutgoingCallResult(new CallResultEventArgs(phoneNumber, callResultReceiver, CallResult.Rejected));
+
             //TODO collect call info
+            DateTime startTime;
+
+            if (!_timeCallStarted.ContainsKey(senderNumber))
+            {
+                startTime = endTime;
+            }
+            else
+            {
+                startTime = _timeCallStarted[senderNumber];
+                _timeCallStarted.Remove(senderNumber);
+            }
+
+            var receiverNumber = senderNumber != phoneNumber ? phoneNumber : callResultReceiver;
+            OnCallCompleted(new CallInfoEventArgs(senderNumber, receiverNumber, startTime, endTime));
         }
 
         private void ProcessRejectedCall(string phoneNumber, out string senderNumber,
@@ -222,23 +243,29 @@ namespace TelephoneExchange
 
         private void DisposeTimer(string key)
         {
-            timersToAbortCall[key].Dispose();
-            timersToAbortCall.Remove(key);
+            _timersToAbortCall[key].Dispose();
+            _timersToAbortCall.Remove(key);
         }
 
-        public void ProcessAnsweredCall(string receiverPhoneNumber)
+        public void ProcessAnsweredCall(string receiverPhoneNumber, DateTime startTime)
         {
-            var senderNumber = expectAnswer.FirstOrDefault(x => x.Value == receiverPhoneNumber).Key;
+            var senderNumber = _expectAnswer.FirstOrDefault(x => x.Value == receiverPhoneNumber).Key;
 
-            if (expectAnswer.ContainsKey(senderNumber))
+            if (_expectAnswer.ContainsKey(senderNumber))
             {
                 DisposeTimer(senderNumber);
-                expectAnswer.Remove(senderNumber);
+                _expectAnswer.Remove(senderNumber);
 
-                callInProgress.Add(senderNumber, receiverPhoneNumber);
+                _callsInProgress.Add(senderNumber, receiverPhoneNumber);
+                _timeCallStarted.Add(senderNumber, startTime);
 
                 OnOutgoingCallResult(new CallResultEventArgs(senderNumber, receiverPhoneNumber, CallResult.Answered));
             }
+        }
+
+        protected virtual void OnCallCompleted(CallInfoEventArgs e)
+        {
+            CallCompleted?.Invoke(this, e);
         }
     }
 }

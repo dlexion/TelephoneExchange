@@ -1,22 +1,20 @@
 ﻿using System;
-using TelephoneExchange.Enums;
 
 namespace TelephoneExchange.EventsArgs
 {
-    public class CallResultEventArgs : EventArgs
+    public class CallInfoEventArgs : EventArgs
     {
-        public CallResultEventArgs(string senderPhoneNumber, string receiverPhoneNumber, CallResult callResult)
+        public CallInfoEventArgs(string senderPhoneNumber, string receiverPhoneNumber, DateTime startTime, DateTime endTime)
         {
             SenderPhoneNumber = senderPhoneNumber;
             ReceiverPhoneNumber = receiverPhoneNumber;
-            CallResult = callResult;
+            StartTime = startTime;
+            EndTime = endTime;
         }
 
         public string SenderPhoneNumber { get; set; }
 
         public string ReceiverPhoneNumber { get; set; }
-
-        public CallResult CallResult { get; set; }
 
         public DateTime StartTime { get; set; }
 

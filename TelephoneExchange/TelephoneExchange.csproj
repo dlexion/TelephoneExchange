@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\CallResult.cs" />
+    <Compile Include="EventsArgs\CallInfoEventArgs.cs" />
     <Compile Include="EventsArgs\CallResultEventArgs.cs" />
     <Compile Include="EventsArgs\CallEventArgs.cs" />
     <Compile Include="EventsArgs\StateChangedEventArgs.cs" />

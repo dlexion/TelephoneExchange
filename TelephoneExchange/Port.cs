@@ -115,13 +115,15 @@ namespace TelephoneExchange
             if (State == PortState.Busy)
             {
                 State = PortState.Online;
-                OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected));
+                OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected)
+                    { EndTime = DateTime.Now });
             }
         }
 
         public void Answer()
         {
-            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Answered));
+            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Answered)
+                { StartTime = DateTime.Now });
         }
 
         protected virtual void OnIncomingCallResult(CallResultEventArgs e)
