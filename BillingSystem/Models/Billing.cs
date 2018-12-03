@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using TelephoneExchange;
 using TelephoneExchange.EventsArgs;
+using TelephoneExchange.Interfaces;
 
 namespace BillingSystem.Models
 {
@@ -11,7 +12,7 @@ namespace BillingSystem.Models
     {
         private BillingUnitOfWork _data;
 
-        public Billing(BillingUnitOfWork data, Station station)
+        public Billing(BillingUnitOfWork data, IBillingConnectable station)
         {
             _data = data;
             station.CallCompleted += CollectCall;

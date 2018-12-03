@@ -1,10 +1,11 @@
 ﻿using System;
 using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
+using TelephoneExchange.Interfaces;
 
 namespace TelephoneExchange
 {
-    public class Port
+    public class Port : IPort, ITerminalConnectable, IStationConnectable
     {
         private PortState _state = PortState.Offline;
 

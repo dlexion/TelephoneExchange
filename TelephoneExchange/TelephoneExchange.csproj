@@ -46,6 +46,11 @@
     <Compile Include="EventsArgs\CallResultEventArgs.cs" />
     <Compile Include="EventsArgs\CallEventArgs.cs" />
     <Compile Include="EventsArgs\StateChangedEventArgs.cs" />
+    <Compile Include="Interfaces\IBillingConnectable.cs" />
+    <Compile Include="Interfaces\ITerminal.cs" />
+    <Compile Include="Interfaces\IPort.cs" />
+    <Compile Include="Interfaces\ITerminalConnectable.cs" />
+    <Compile Include="Interfaces\IStationConnectable.cs" />
     <Compile Include="Port.cs" />
     <Compile Include="Enums\PortState.cs" />
     <Compile Include="Station.cs" />

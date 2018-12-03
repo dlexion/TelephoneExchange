@@ -5,14 +5,15 @@ using System.Text;
 using System.Timers;
 using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
+using TelephoneExchange.Interfaces;
 
 namespace TelephoneExchange
 {
-    public class Station
+    public class Station : IBillingConnectable
     {
         private const double AnswerDelay = 300;
 
-        private readonly List<Port> _ports;
+        private readonly List<IPort> _ports;
 
         // key is sender, value is receiver
         private readonly Dictionary<string, string> _expectAnswer = new Dictionary<string, string>();
@@ -25,14 +26,14 @@ namespace TelephoneExchange
 
         public Station()
         {
-            _ports=new List<Port>();
+            _ports = new List<IPort>();
         }
 
         //subscribe here
-        public Station(List<Port> ports)
+        public Station(List<IPort> ports)
         {
             _ports = ports;
-            InitialSubscribeToPorts(_ports);
+            InitialSubscribeToPorts(_ports.OfType<IStationConnectable>());
         }
 
         public event EventHandler<CallEventArgs> IncomingCall;
@@ -121,7 +122,7 @@ namespace TelephoneExchange
             return timer;
         }
 
-        private void InitialSubscribeToPorts(IEnumerable<Port> ports)
+        private void InitialSubscribeToPorts(IEnumerable<IStationConnectable> ports)
         {
             foreach (var port in ports)
             {
@@ -129,26 +130,26 @@ namespace TelephoneExchange
             }
         }
 
-        private void InitialSubscribeToPort(Port port)
+        private void InitialSubscribeToPort(IStationConnectable port)
         {
             port.StateChanged += ProcessPortState;
         }
 
         private void ProcessPortState(object sender, StateChangedEventArgs e)
         {
-            var port = (Port)sender;
+            var port = (IPort)sender;
 
             if (port.State == PortState.Online && e.PreviousState == PortState.Offline)
             {
-                SubscribePort(port);
+                SubscribePort(port as IStationConnectable);
             }
             else if (port.State == PortState.Offline)
             {
-                UnsubscribePort(port);
+                UnsubscribePort(port as IStationConnectable);
             }
         }
 
-        private void UnsubscribePort(Port port)
+        private void UnsubscribePort(IStationConnectable port)
         {
             port.Outgoing -= ProcessOutgoingCall;
             port.IncomingCallResult -= ProcessIncomingCallResult;
@@ -158,7 +159,7 @@ namespace TelephoneExchange
             OutgoingCallResult -= port.OutgoingCallResult;
         }
 
-        private void SubscribePort(Port port)
+        private void SubscribePort(IStationConnectable port)
         {
             port.Outgoing += ProcessOutgoingCall;
             port.IncomingCallResult += ProcessIncomingCallResult;
@@ -216,7 +217,6 @@ namespace TelephoneExchange
 
             OnOutgoingCallResult(new CallResultEventArgs(phoneNumber, callResultReceiver, CallResult.Rejected));
 
-            //TODO collect call info
             DateTime startTime;
 
             if (!_timeCallStarted.ContainsKey(senderNumber))

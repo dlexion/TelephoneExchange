@@ -1,12 +1,13 @@
 ﻿using System;
 using TelephoneExchange.Enums;
 using TelephoneExchange.EventsArgs;
+using TelephoneExchange.Interfaces;
 
 namespace TelephoneExchange
 {
-    public class Terminal
+    public class Terminal : ITerminal
     {
-        private Port _port;
+        private IPort _port;
 
         // false as default
         private bool _isConnected;
@@ -45,18 +46,20 @@ namespace TelephoneExchange
             _port.Answer();
         }
 
-        public void ConnectToPort(Port port)
+        public void ConnectToPort(ITerminalConnectable port)
         {
             if (_isConnected)
                 return;
 
-            _port = port;
-            _isConnected = true;
+            port.Incoming += NotificationAboutIncomingCall;
+            port.AbortIncoming += PortOnAbortIncoming;
+            port.ReturnedCallResult += OutgoingCallResult;
+            port.ConnectWithTerminal();
 
-            _port.Incoming += NotificationAboutIncomingCall;
-            _port.AbortIncoming += PortOnAbortIncoming;
-            _port.ReturnedCallResult += OutgoingCallResult;
-            _port.ConnectWithTerminal();
+            _port = port as IPort;
+
+            if (_port != null)
+                _isConnected = true;
         }
 
         private void OutgoingCallResult(object sender, CallResultEventArgs e)
@@ -92,13 +95,15 @@ namespace TelephoneExchange
 
         public void DisconnectFromPort()
         {
+            var port = _port as ITerminalConnectable;
+
             if (!_isConnected)
                 return;
 
-            _port.Incoming -= NotificationAboutIncomingCall;
-            _port.AbortIncoming -= PortOnAbortIncoming;
-            _port.ReturnedCallResult -= OutgoingCallResult;
-            _port.DisconnectWithTerminal();
+            port.Incoming -= NotificationAboutIncomingCall;
+            port.AbortIncoming -= PortOnAbortIncoming;
+            port.ReturnedCallResult -= OutgoingCallResult;
+            port.DisconnectWithTerminal();
 
             _port = null;
             _isConnected = false;
