@@ -59,6 +59,7 @@ namespace UI
             t1.Reject();
 
             Console.WriteLine(billing.GetReport(port1.PhoneNumber, x => x.Duration.Minutes >= 0));
+            Console.WriteLine(billing.GetBalance(port1.PhoneNumber));
 
             Console.ReadKey();
         }

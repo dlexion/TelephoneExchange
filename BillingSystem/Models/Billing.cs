@@ -37,23 +37,35 @@ namespace BillingSystem.Models
 
         public void CollectCall(object sender, CallInfoEventArgs e)
         {
-            _data.Calls.Add(new Call(e.SenderPhoneNumber, e.ReceiverPhoneNumber, e.StartTime, e.EndTime));
+            var newCall = new Call(e.SenderPhoneNumber, e.ReceiverPhoneNumber, e.StartTime, e.EndTime);
+            _data.Calls.Add(newCall);
+            ReduceBalance(e.SenderPhoneNumber, CalculateCallCost(newCall, e.SenderPhoneNumber));
         }
 
         public decimal GetBalance(string phoneNumber)
         {
-            var phone = _data.Ports.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
+            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == phoneNumber);
 
-            return phone?.Balance ?? default(decimal);
+            return client?.Port.Balance ?? default(decimal);
         }
 
         public void ReplenishmentBalance(string phoneNumber, decimal money)
         {
-            var phone = _data.Ports.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
+            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == phoneNumber);
 
-            if (phone != null)
+            if (client != null)
             {
-                phone.Balance += money;
+                client.Port.Balance += money;
+            }
+        }
+
+        private void ReduceBalance(string phoneNumber, decimal money)
+        {
+            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == phoneNumber);
+
+            if (client != null)
+            {
+                client.Port.Balance -= money;
             }
         }
 
