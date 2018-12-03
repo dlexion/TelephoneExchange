@@ -9,25 +9,22 @@ namespace BillingSystem.Models
     // TODO reduce balance once per month
     public class Billing
     {
-        private UnitOfWork _data;
+        private BillingUnitOfWork _data;
 
-        public Billing(UnitOfWork data)
+        public Billing(BillingUnitOfWork data)
         {
             _data = data;
         }
 
         public Tuple<Terminal, Port> Contract(string firstName, string lastName)
         {
-            var terminal = new Terminal()
-            {
-                PhoneNumber = GetPhoneNumberForNewClient()
-            };
+            var terminal = new Terminal();
 
-            var port = new Port();
+            var port = new Port(GetPhoneNumberForNewClient());
 
             if (!_data.Clients.GetAll().Any(x => x.FirstName == firstName && x.LastName == lastName))
             {
-                _data.Clients.Add(new Client(firstName, lastName) { Terminal = new Phone(terminal.PhoneNumber) });
+                _data.Clients.Add(new Client(firstName, lastName) { Port = new PortModel(port.PhoneNumber) });
 
                 return new Tuple<Terminal, Port>(terminal, port);
             }
@@ -35,21 +32,21 @@ namespace BillingSystem.Models
             return null;
         }
 
-        public void CollectCall(object sender, CallEventArgs e)
+        public void CollectCall(object sender, CallInfoEventArgs e)
         {
             _data.Calls.Add(new Call(e.SenderPhoneNumber, e.ReceiverPhoneNumber, e.StartTime, e.EndTime));
         }
 
         public decimal GetBalance(string phoneNumber)
         {
-            var phone = _data.Phones.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
+            var phone = _data.Ports.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
 
             return phone?.Balance ?? default(decimal);
         }
 
         public void ReplenishmentBalance(string phoneNumber, decimal money)
         {
-            var phone = _data.Phones.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
+            var phone = _data.Ports.GetAll().FirstOrDefault(x => x.PhoneNumber == phoneNumber);
 
             if (phone != null)
             {

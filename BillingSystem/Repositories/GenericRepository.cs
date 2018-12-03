@@ -2,7 +2,7 @@
 
 namespace BillingSystem.Repositories
 {
-    public class GenericRepository<T> : IRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private readonly IList<T> _entitiesList = new List<T>();
 

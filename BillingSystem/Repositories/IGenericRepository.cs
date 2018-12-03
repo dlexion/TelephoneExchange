@@ -2,7 +2,7 @@
 
 namespace BillingSystem.Repositories
 {
-    public interface IRepository<T> where T : class
+    public interface IGenericRepository<T> where T : class
     {
         ICollection<T> GetAll();
 
