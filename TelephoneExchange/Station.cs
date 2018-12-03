@@ -23,6 +23,11 @@ namespace TelephoneExchange
 
         private readonly Dictionary<string, DateTime> _timeCallStarted = new Dictionary<string, DateTime>();
 
+        public Station()
+        {
+            _ports=new List<Port>();
+        }
+
         //subscribe here
         public Station(List<Port> ports)
         {
@@ -37,6 +42,12 @@ namespace TelephoneExchange
         public event EventHandler<CallEventArgs> AbortIncomingCall;
 
         public event EventHandler<CallInfoEventArgs> CallCompleted;
+
+        public void AddPort(Port port)
+        {
+            _ports.Add(port);
+            InitialSubscribeToPort(port);
+        }
 
         public string GetPortsState()
         {

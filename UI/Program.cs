@@ -15,12 +15,18 @@ namespace UI
     {
         static void Main(string[] args)
         {
-            Billing billing = new Billing(new BillingUnitOfWork());
+            #region initialization
+            var station = new Station();
+
+            var billing = new Billing(new BillingUnitOfWork(), station);
             var equipment1 = billing.Contract("Ivan", "Ivanov");
 
             var t1 = equipment1.Item1;
             t1.Log = Console.WriteLine;
             var port1 = equipment1.Item2;
+
+            station.AddPort(port1);
+            t1.ConnectToPort(port1);
 
             var equipment2 = billing.Contract("Dmitry", "Sidorod");
 
@@ -28,43 +34,29 @@ namespace UI
             t2.Log = Console.WriteLine;
             var port2 = equipment2.Item2;
 
+            station.AddPort(port2);
+            t2.ConnectToPort(port2);
+
+
             var equipment3 = billing.Contract("Petr", "Sidorod");
 
             var t3 = equipment3.Item1;
             t3.Log = Console.WriteLine;
             var port3 = equipment3.Item2;
 
-            var station = new Station(new List<Port>()
-            {
-                port1,
-                port2,
-                port3
-            });
-
-            station.CallCompleted += billing.CollectCall;
-
-            t1.ConnectToPort(port1);
-            t2.ConnectToPort(port2);
+            station.AddPort(port3);
             t3.ConnectToPort(port3);
-
-            //Console.WriteLine(station.GetPortsState());
+            #endregion
 
             t1.Call(port2.PhoneNumber);
-
-            //Console.WriteLine(station.GetPortsState());
-
-            //t3.Call(port2.PhoneNumber);
-            //t2.Reject();
 
             t2.Answer();
             Thread.Sleep(1000);
 
-            //Console.WriteLine(station.GetPortsState());
-
             t2.Reject();
-            //Console.WriteLine(station.GetPortsState());
+
             t3.Call(port1.PhoneNumber);
-            Thread.Sleep(400);
+            t1.Reject();
 
             Console.WriteLine(billing.GetReport(port1.PhoneNumber, x => x.Duration.Minutes >= 0));
 

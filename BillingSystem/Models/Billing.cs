@@ -11,9 +11,10 @@ namespace BillingSystem.Models
     {
         private BillingUnitOfWork _data;
 
-        public Billing(BillingUnitOfWork data)
+        public Billing(BillingUnitOfWork data, Station station)
         {
             _data = data;
+            station.CallCompleted += CollectCall;
         }
 
         public Tuple<Terminal, Port> Contract(string firstName, string lastName)
