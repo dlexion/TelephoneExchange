@@ -47,11 +47,11 @@ namespace UI
             t2.ConnectToPort(port2);
             t3.ConnectToPort(port3);
 
-            Console.WriteLine(station.GetPortsState());
+            //Console.WriteLine(station.GetPortsState());
 
             t1.Call(port2.PhoneNumber);
 
-            Console.WriteLine(station.GetPortsState());
+            //Console.WriteLine(station.GetPortsState());
 
             //t3.Call(port2.PhoneNumber);
             //t2.Reject();
@@ -59,26 +59,16 @@ namespace UI
             t2.Answer();
             Thread.Sleep(1000);
 
-            Console.WriteLine(station.GetPortsState());
+            //Console.WriteLine(station.GetPortsState());
 
             t2.Reject();
-            Console.WriteLine(station.GetPortsState());
+            //Console.WriteLine(station.GetPortsState());
             t3.Call(port1.PhoneNumber);
-            t1.Reject();
+            Thread.Sleep(400);
 
             Console.WriteLine(billing.GetReport(port1.PhoneNumber, x => x.Duration.Minutes >= 0));
-            //t3.DisconnectFromPort();
-            //t2.Call(port3.PhoneNumber);
-            //t3.Answer();
-            //Console.ReadKey();
-        }
 
-        // TODO give user ability to choose what to do with incoming call
-        static void RejectOrAnswer(object sender, CallEventArgs e)
-        {
-            var terminal = (Terminal)sender;
-
-            //terminal.Answer();
+            Console.ReadKey();
         }
     }
 }
