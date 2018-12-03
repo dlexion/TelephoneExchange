@@ -82,6 +82,31 @@ namespace TelephoneExchange
             }
         }
 
+        public void AbortCall(object sender, CallEventArgs e)
+        {
+            if (PhoneNumber == e.ReceiverPhoneNumber)
+            {
+                State = PortState.Online;
+                OnAbortIncoming(e);
+            }
+        }
+
+        public void RejectCall()
+        {
+            if (State == PortState.Busy)
+            {
+                State = PortState.Online;
+                OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected)
+                { EndTime = DateTime.Now });
+            }
+        }
+
+        public void Answer()
+        {
+            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Answered)
+            { StartTime = DateTime.Now });
+        }
+
         protected virtual void OnStateChanged(StateChangedEventArgs e)
         {
             StateChanged?.Invoke(this, e);
@@ -97,34 +122,9 @@ namespace TelephoneExchange
             AbortIncoming?.Invoke(this, e);
         }
 
-        public void AbortCall(object sender, CallEventArgs e)
-        {
-            if (PhoneNumber == e.ReceiverPhoneNumber)
-            {
-                State = PortState.Online;
-                OnAbortIncoming(e);
-            }
-        }
-
         protected virtual void OnReturnedCallResult(CallResultEventArgs e)
         {
             ReturnedCallResult?.Invoke(this, e);
-        }
-
-        public void RejectCall()
-        {
-            if (State == PortState.Busy)
-            {
-                State = PortState.Online;
-                OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Rejected)
-                    { EndTime = DateTime.Now });
-            }
-        }
-
-        public void Answer()
-        {
-            OnIncomingCallResult(new CallResultEventArgs("", PhoneNumber, CallResult.Answered)
-                { StartTime = DateTime.Now });
         }
 
         protected virtual void OnIncomingCallResult(CallResultEventArgs e)

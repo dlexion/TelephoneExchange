@@ -62,6 +62,22 @@ namespace TelephoneExchange
                 _isConnected = true;
         }
 
+        public void DisconnectFromPort()
+        {
+            var port = _port as ITerminalConnectable;
+
+            if (!_isConnected)
+                return;
+
+            port.Incoming -= NotificationAboutIncomingCall;
+            port.AbortIncoming -= PortOnAbortIncoming;
+            port.ReturnedCallResult -= OutgoingCallResult;
+            port.DisconnectWithTerminal();
+
+            _port = null;
+            _isConnected = false;
+        }
+
         private void OutgoingCallResult(object sender, CallResultEventArgs e)
         {
             switch (e.CallResult)
@@ -91,22 +107,6 @@ namespace TelephoneExchange
             Log?.Invoke($"Call from {e.SenderPhoneNumber} was aborted");
 
             _isRinging = false;
-        }
-
-        public void DisconnectFromPort()
-        {
-            var port = _port as ITerminalConnectable;
-
-            if (!_isConnected)
-                return;
-
-            port.Incoming -= NotificationAboutIncomingCall;
-            port.AbortIncoming -= PortOnAbortIncoming;
-            port.ReturnedCallResult -= OutgoingCallResult;
-            port.DisconnectWithTerminal();
-
-            _port = null;
-            _isConnected = false;
         }
 
         protected virtual void OnIncomingCall(CallEventArgs e)
