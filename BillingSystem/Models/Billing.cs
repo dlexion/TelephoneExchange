@@ -24,7 +24,8 @@ namespace BillingSystem.Models
 
             if (!_data.Clients.GetAll().Any(x => x.FirstName == firstName && x.LastName == lastName))
             {
-                _data.Clients.Add(new Client(firstName, lastName) { Port = new PortModel(port.PhoneNumber) });
+                _data.Clients.Add(new Client(firstName, lastName)
+                { Port = new PortModel(port.PhoneNumber) { Tariff = new Tariff() } });
 
                 return new Tuple<Terminal, Port>(terminal, port);
             }
@@ -67,7 +68,7 @@ namespace BillingSystem.Models
 
             foreach (var item in q)
             {
-                info.Append(item);
+                info.Append(item).Append($" | {CalculateCallCost(item)}").Append("\n");
             }
 
             return info.ToString();
@@ -83,6 +84,18 @@ namespace BillingSystem.Models
             } while (!_data.PhoneNumbers.GetAll().Any(x => x.Equals(newNumber)));
 
             return newNumber;
+        }
+
+        private decimal CalculateCallCost(Call call)
+        {
+            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == call.SenderPhoneNumber);
+
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
+            return (call.Duration.Minutes + 1) * client.Port.Tariff.CostPerMinute;
         }
     }
 }

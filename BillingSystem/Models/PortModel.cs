@@ -6,6 +6,8 @@
 
         public decimal Balance { get; set; } = 0;
 
+        public Tariff Tariff { get; set; }
+
         public PortModel(string phoneNumber)
         {
             PhoneNumber = phoneNumber;

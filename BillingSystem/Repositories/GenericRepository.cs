@@ -4,11 +4,16 @@ namespace BillingSystem.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly IList<T> _entitiesList = new List<T>();
+        private readonly IList<T> _entitiesList;
 
         public GenericRepository(IList<T> entities)
         {
             _entitiesList = entities;
+        }
+
+        public GenericRepository()
+        {
+            _entitiesList = new List<T>();
         }
 
         public ICollection<T> GetAll()
