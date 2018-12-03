@@ -64,19 +64,19 @@ namespace TelephoneExchange
             switch (e.CallResult)
             {
                 case CallResult.Answered:
-                    Log($"{e.ReceiverPhoneNumber} answered a call. Now call is in progress");
+                    Log?.Invoke($"{e.ReceiverPhoneNumber} answered a call. Now call is in progress");
                     break;
                 case CallResult.Rejected:
-                    Log($"{e.SenderPhoneNumber} rejected a call");
+                    Log?.Invoke($"{e.SenderPhoneNumber} rejected a call");
                     break;
                 case CallResult.NotAnswered:
-                    Log($"{e.SenderPhoneNumber} did not answer");
+                    Log?.Invoke($"{e.SenderPhoneNumber} did not answer");
                     break;
                 case CallResult.NotExists:
-                    Log($"Number {e.SenderPhoneNumber} is wrong or offline");
+                    Log?.Invoke($"Number {e.SenderPhoneNumber} is wrong or offline");
                     break;
                 case CallResult.Busy:
-                    Log($"Number {e.SenderPhoneNumber} is busy");
+                    Log?.Invoke($"Number {e.SenderPhoneNumber} is busy");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -85,7 +85,7 @@ namespace TelephoneExchange
 
         private void PortOnAbortIncoming(object sender, CallEventArgs e)
         {
-            Log($"Call from {e.SenderPhoneNumber} was aborted");
+            Log?.Invoke($"Call from {e.SenderPhoneNumber} was aborted");
 
             _isRinging = false;
         }

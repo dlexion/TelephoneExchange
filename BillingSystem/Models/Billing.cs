@@ -68,7 +68,7 @@ namespace BillingSystem.Models
 
             foreach (var item in q)
             {
-                info.Append(item).Append($" | {CalculateCallCost(item)}").Append("\n");
+                info.Append(item).Append($" | {CalculateCallCost(item, phoneNumber)}").Append("\n");
             }
 
             return info.ToString();
@@ -81,21 +81,26 @@ namespace BillingSystem.Models
             {
                 newNumber = new Random().Next(1000, 9999).ToString();
 
-            } while (!_data.PhoneNumbers.GetAll().Any(x => x.Equals(newNumber)));
+            } while (_data.PhoneNumbers.GetAll().Any(x => x.Equals(newNumber)));
+
+            _data.PhoneNumbers.Add(newNumber);
 
             return newNumber;
         }
 
-        private decimal CalculateCallCost(Call call)
+        private decimal CalculateCallCost(Call call, string phoneNumber)
         {
-            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == call.SenderPhoneNumber);
+            var client = _data.Clients.GetAll().FirstOrDefault(x => x.Port.PhoneNumber == phoneNumber);
 
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
-            return (call.Duration.Minutes + 1) * client.Port.Tariff.CostPerMinute;
+            //take seconds to show how it works
+            return call.SenderPhoneNumber == phoneNumber
+                ? (call.Duration.Seconds + 1) * client.Port.Tariff.CostPerMinute
+                : 0;
         }
     }
 }
