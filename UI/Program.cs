@@ -21,42 +21,42 @@ namespace UI
             var billing = new Billing(new BillingUnitOfWork(), station);
             var equipment1 = billing.Contract("Ivan", "Ivanov");
 
-            var t1 = equipment1.Item1;
-            t1.Log = Console.WriteLine;
+            var terminal1 = equipment1.Item1;
+            terminal1.Log = Console.WriteLine;
             var port1 = equipment1.Item2;
 
             station.AddPort(port1);
-            t1.ConnectToPort(port1);
+            terminal1.ConnectToPort(port1);
 
             var equipment2 = billing.Contract("Dmitry", "Sidorod");
 
-            var t2 = equipment2.Item1;
-            t2.Log = Console.WriteLine;
+            var terminal2 = equipment2.Item1;
+            terminal2.Log = Console.WriteLine;
             var port2 = equipment2.Item2;
 
             station.AddPort(port2);
-            t2.ConnectToPort(port2);
+            terminal2.ConnectToPort(port2);
 
 
             var equipment3 = billing.Contract("Petr", "Sidorod");
 
-            var t3 = equipment3.Item1;
-            t3.Log = Console.WriteLine;
+            var terminal3 = equipment3.Item1;
+            terminal3.Log = Console.WriteLine;
             var port3 = equipment3.Item2;
 
             station.AddPort(port3);
-            t3.ConnectToPort(port3);
+            terminal3.ConnectToPort(port3);
             #endregion
 
-            t1.Call(port2.PhoneNumber);
+            terminal1.Call(port2.PhoneNumber);
 
-            t2.Answer();
+            terminal2.Answer();
             Thread.Sleep(1000);
 
-            t2.Reject();
+            terminal2.Reject();
 
-            t3.Call(port1.PhoneNumber);
-            t1.Reject();
+            terminal3.Call(port1.PhoneNumber);
+            terminal1.Reject();
 
             Console.WriteLine(billing.GetReport(port1.PhoneNumber, x => x.Duration.Minutes >= 0));
             Console.WriteLine(billing.GetBalance(port1.PhoneNumber));
